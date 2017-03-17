@@ -161,7 +161,7 @@
   //-------------------below are for moisture sensor plot------------------- 
           x_mo.domain(d3.extent(data1, function(d) { return d.timestamp; }));
          //y_mo.domain([200, d3.max(data1, function(d) { return d.mo_10; })]);
-          y_mo.domain([250, 570]);
+          y_mo.domain([230, 590]);
   
           //var color = d3.scaleOrdinal(d3.schemeCategory10);
           var color = d3.scaleOrdinal(d3.schemeCategory20);
