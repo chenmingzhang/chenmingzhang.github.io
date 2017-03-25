@@ -6,48 +6,31 @@ var margin = {top: 30, right: 100, bottom: 100, left: 50},
     height = 400 - margin.top - margin.bottom;
 // Parse the date / time
 //var parseDate = d3.timeParse("%d-%b-%y");
-//var key_mo=["mo0","mo1","mo2","mo3","mo4","mo5","mo6","mo7","mo8","mo9","mo10","mo11"];
-var key_mo=["mo1","mo2","mo3","mo4","mo5","mo6","mo7","mo8","mo9","mo10","mo11"];
-var key_temp=["tp12","tp2","tp21","tp32","tp35","tp4b","tp8a","tp9f","tpa3","tpc7","tpe5"];
-//var key_temp=["tp4b"];
-var active1=[];
-var act_temp=[];
-var legendSpace = width/ key_mo.length
+//http://stackoverflow.com/questions/1208222/how-to-do-associative-array-hashing-in-javascript
+
+
 var format = d3.timeParse('%Y-%m-%dT%H:%M:%S.%LZ')
-// Set the ranges
-var x_mo = d3.scaleTime().range([0, width]);
-var y_mo = d3.scaleLinear().range([height, 0]);
-var x_temp = d3.scaleTime().range([0, width]);
-var y_temp = d3.scaleLinear().range([height, 0]);
-//// Define the line for moisture
-var valueline_mo=[];
-key_mo.forEach(function(d,i) {
-    valueline_mo[i]=d3.line()
-        .x(function(d) { return x_mo(d.timestamp); })
-        .y(function(d) { return y_mo(d[key_mo[i]]); });
-})
-//// Define the line for moisture
-var valueline_temp=[];
-key_mo.forEach(function(d,i) {
-    valueline_temp[i]=d3.line()
-        .x(function(d) { return x_temp(d.timestamp); })
-        .y(function(d) { return y_temp(d[key_temp[i]]); });
-})
-// Adds the svg canvas
-var svg = d3.select("body")
-    .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform", 
-              "translate(" + margin.left + "," + margin.top + ")");
-var svg2 = d3.select("body")
-    .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform", 
-              "translate(" + margin.left + "," + margin.top + ")");
+
+scale= {};
+scale.key=["scale"];
+scale.ylim=[15000,17000];
+
+
+moisture= {};
+moisture.key=["mo1","mo2","mo3","mo4","mo5","mo6","mo7","mo8","mo9","mo10","mo11"];
+moisture.ylim=[200,600];
+
+
+temperature= {};
+temperature.key=["tp12","tp2","tp21","tp32","tp35","tp4b","tp8a","tp9f","tpa3","tpc7","tpe5","ht115t","ht119t"];
+temperature.ylim=[20,40];
+
+
+relativehumidity= {};
+relativehumidity.key=["ht115rh","ht119rh"];
+relativehumidity.ylim=[0,100];
+
+
 // below is to obtain the data
     var data1;
     //var url =   "https://data.sparkfun.com/output/JxO9ydlRjnuXARaZX5od.json"
@@ -61,105 +44,83 @@ var svg2 = d3.select("body")
             d.timestamp = format(d.timestamp);
             //dataset.date = parseDate(d.date);
             //dataset.close = +d.close;
-	    d.tp4b=d.tp4b/1.0;
         });
 	 
     	data1=json;
     	console.log(data1)
- //       console.log(active1)
-        x_mo.domain(d3.extent(data1, function(d) { return d.timestamp; }));
+        // plot scale result
+        plot_func2(scale,data1);
+        // plot scale result
+        plot_func2(relativehumidity,data1);
+        // plot moisture result
+        plot_func2(moisture,data1);
+        // plot temperature result
+        plot_func2(temperature,data1);
+  
+})   // d3.json
+
+
+
+function plot_func2(prop,data1) {
+    prop.legendSpace=width/prop.key.length;
+    prop.active1=[];
+    prop.valueline=[];
+    prop.x= d3.scaleTime().range([0, width]);
+    prop.y= d3.scaleLinear().range([height, 0]);
+    prop.key.forEach(function(d,i) {
+        prop.valueline[i]=d3.line()
+            .x(function(d) { return prop.x(d.timestamp); })
+            .y(function(d) { return prop.y(d[prop.key[i]]); });
+    })
+
+    prop.svg = d3.select("body")
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform", 
+                  "translate(" + margin.left + "," + margin.top + ")");
+//----------------below are moisture plottings---------------------- 
+// input x_mo, y_mo, key_mo, valueline_mo, data1,
+        prop.x.domain(d3.extent(data1, function(d) { return d.timestamp; }));
         //http://stackoverflow.com/questions/7538519/how-to-get-subarray-from-array 
         //x_mo.domain(d3.extent(data1.slice(1,1500), function(d) { return d.timestamp; }));
-        y_mo.domain([200, d3.max(data1, function(d) { return d.mo10; })]);
-        y_mo.domain([200, 550]);
-        //y.domain([0, 30]);
-//----------------below are moisture plottings---------------------- 
+        //prop.y.domain([200, d3.max(data1, function(d) { return d.mo10; })]);
+        prop.y.domain(prop.ylim);
         //var color = d3.scaleOrdinal(d3.schemeCategory10);
         var color = d3.scaleOrdinal(d3.schemeCategory20);
-        key_mo.forEach(function(d,i) {
-            svg.append("path")
+        prop.key.forEach(function(d,i) {
+            prop.svg.append("path")
                 .attr("class", "line")
-                .style("stroke", color(key_mo[i]))
-                .attr("d", valueline_mo[i](data1))
-                .attr("id", 'tag'+key_mo[i].replace(/\s+/g, '')); // assign id **
-            svg.append("text")
-                .attr("x", (legendSpace/2)+i*legendSpace)  // space legend
+                .style("stroke", color(prop.key[i]))
+                .attr("d", prop.valueline[i](data1))
+                .attr("id", 'tag'+prop.key[i].replace(/\s+/g, '')); // assign id **
+            prop.svg.append("text")
+                .attr("x", (prop.legendSpace/2)+i*prop.legendSpace)  // space legend
                 .attr("y", height + (margin.bottom/2)+ 5)
                 .attr("class", "legend")    // style the legend
-                .style("fill", color(key_mo[i]))
-                .on("click", function(){                     // ************
+                .style("fill", color(prop.key[i]))
+                .on("click", function(){      
                           // Determine if current line is visible 
-                          var active   = active1[i] ? false : true,  // ************ 
+                          var active   = prop.active1[i] ? false : true, 
                           newOpacity = active ? 0 : 1;             // ************
                           // Hide or show the elements based on the ID
-                          d3.select("#tag"+key_mo[i].replace(/\s+/g, '')) // *********
-                              .transition().duration(100)          // ************
-                              .style("opacity", newOpacity);       // ************
+                          d3.select("#tag"+prop.key[i].replace(/\s+/g, ''))
+                              .transition().duration(100) 
+                              .style("opacity", newOpacity);
                           // Update whether or not the elements are active
-                          active1[i] = active;                       // ************
-                          })                                       // ************
-                .text(key_mo[i]); 
+                          prop.active1[i] = active; 
+                          })  
+                .text(prop.key[i]); 
          });
          // Add the X Axis
-         svg.append("g")
+         prop.svg.append("g")
              .attr("class", "x axis")
              .attr("transform", "translate(0," + height + ")")
-             .call(d3.axisBottom(x_mo));
+             .call(d3.axisBottom(prop.x));
          // Add the Y Axis
-         svg.append("g")
+         prop.svg.append("g")
              .attr("class", "y axis")
-             .call(d3.axisLeft(y_mo));
-//---------------------------- below are to plot graph 2 ----------------------
-        //x_temp.domain(d3.extent(data1, function(d) { return d.timestamp; }));
-        x_temp.domain(d3.extent(data1, function(d) { return d.timestamp; }));
-        y_temp.domain([20, d3.max(data1, function(d) { return d.tp4b; })]);
-        
-        var color_temp = d3.scaleOrdinal(d3.schemeCategory20);
-        key_temp.forEach(function(d,i) {
-            svg2.append("path")
-                .attr("class", "line")
-                .style("stroke", color_temp(key_temp[i]))
-                .attr("d", valueline_temp[i](data1))
-                .attr("id", 'tag'+key_temp[i].replace(/\s+/g, '')); // assign id **
-            svg2.append("text")
-                .attr("x", (legendSpace/2)+i*legendSpace)  // space legend
-                .attr("y", height + (margin.bottom/2)+ 5)
-                .attr("class", "legend")    // style the legend
-                .style("fill", color_temp(key_temp[i]))
-                .on("click", function(){                     // ************
-                          // Determine if current line is visible 
-                          var active   = act_temp[i] ? false : true,  // ************ 
-                          newOpacity = active ? 0 : 1;             // ************
-                          // Hide or show the elements based on the ID
-                          d3.select("#tag"+key_temp[i].replace(/\s+/g, '')) // *********
-                              .transition().duration(100)          // ************
-                              .style("opacity", newOpacity);       // ************
-                          // Update whether or not the elements are active
-                          act_temp[i] = active;                       // ************
-                          })                                       // ************
-                .text(key_temp[i]); 
-         });
-         // Add the X Axis
-         svg2.append("g")
-             .attr("class", "x axis")
-             .attr("transform", "translate(0," + height + ")")
-             .call(d3.axisBottom(x_temp));
-//         // Add the Y Axis
-         svg2.append("g")
-             .attr("class", "y axis")
-             .call(d3.axisLeft(y_temp));
-//    svg.append("text")
-//        .attr("transform", "translate("+(width+3)+","+y(data1[0].mo2)+")")
-//        .attr("dy", ".35em")
-//        .attr("text-anchor", "start")
-//        .style("fill", "red")
-//        .text("Open");
-//  
-//    svg.append("text")
-//        .attr("transform", "translate("+(width+3)+","+y(data1[0].mo1)+")")
-//        .attr("dy", ".35em")
-//        .attr("text-anchor", "start")
-//        .style("fill", "steelblue")
-//        .text("Close");
-  
-})
+             .call(d3.axisLeft(prop.y));
+
+}
