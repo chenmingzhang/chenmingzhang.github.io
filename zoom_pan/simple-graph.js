@@ -75,6 +75,8 @@ SimpleGraph = function(elemid, options) {
       .on("touchstart.drag", self.plot_drag())
       this.plot.call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", this.redraw()));
 
+
+// CM 17-03-20 i dont know what does this do
   this.vis.append("svg")
       .attr("top", 0)
       .attr("left", 0)
@@ -86,6 +88,8 @@ SimpleGraph = function(elemid, options) {
           .attr("class", "line")
           .attr("d", this.line(this.points));
 
+// CM 17-03-20 i dont know what does this do
+
   // add Chart Title
   if (this.options.title) {
     this.vis.append("text")
@@ -96,7 +100,7 @@ SimpleGraph = function(elemid, options) {
         .style("text-anchor","middle");
   }
 
-  // Add the x-axis label
+// Add the x-axis label
   if (this.options.xlabel) {
     this.vis.append("text")
         .attr("class", "axis")
@@ -107,18 +111,19 @@ SimpleGraph = function(elemid, options) {
         .style("text-anchor","middle");
   }
 
+ CM 17-03-20 i dont know what does this do
   // add y-axis label
   if (this.options.ylabel) {
     this.vis.append("g").append("text")
         .attr("class", "axis")
         .text(this.options.ylabel)
         .style("text-anchor","middle")
-        .attr("transform","translate(" + -40 + " " + this.size.height/2+") rotate(-90)");
+        .attr("transform","translate(" + -40 + " " + this.size.height/2+") rotate(-90)"); 
   }
 
   d3.select(this.chart)
-//      .on("mousemove.drag", self.mousemove())
-//      .on("touchmove.drag", self.mousemove())
+      .on("mousemove.drag", self.mousemove())
+      .on("touchmove.drag", self.mousemove())
       .on("mouseup.drag",   self.mouseup())
       .on("touchend.drag",  self.mouseup());
 
@@ -159,25 +164,25 @@ SimpleGraph.prototype.update = function() {
   var self = this;
   var lines = this.vis.select("path").attr("d", this.line(this.points));
         
-//  var circle = this.vis.select("svg").selectAll("circle")
-//      .data(this.points, function(d) { return d; });
-//
-//  circle.enter().append("circle")
-//      .attr("class", function(d) { return d === self.selected ? "selected" : null; })
-//      .attr("cx",    function(d) { return self.x(d.x); })
-//      .attr("cy",    function(d) { return self.y(d.y); })
-//      .attr("r", 10.0)
-//      .style("cursor", "ns-resize");
-//      //.on("mousedown.drag",  self.datapoint_drag())
-//      //.on("touchstart.drag", self.datapoint_drag());
-//
-//  circle
-//      .attr("class", function(d) { return d === self.selected ? "selected" : null; })
-//      .attr("cx",    function(d) { 
-//        return self.x(d.x); })
-//      .attr("cy",    function(d) { return self.y(d.y); });
-//
-//  circle.exit().remove();
+  var circle = this.vis.select("svg").selectAll("circle")
+      .data(this.points, function(d) { return d; });
+
+  circle.enter().append("circle")
+      .attr("class", function(d) { return d === self.selected ? "selected" : null; })
+      .attr("cx",    function(d) { return self.x(d.x); })
+      .attr("cy",    function(d) { return self.y(d.y); })
+      .attr("r", 10.0)
+      .style("cursor", "ns-resize")
+      .on("mousedown.drag",  self.datapoint_drag())
+      .on("touchstart.drag", self.datapoint_drag());
+
+  circle
+      .attr("class", function(d) { return d === self.selected ? "selected" : null; })
+      .attr("cx",    function(d) { 
+        return self.x(d.x); })
+      .attr("cy",    function(d) { return self.y(d.y); });
+
+  circle.exit().remove();
 
   if (d3.event && d3.event.keyCode) {
     d3.event.preventDefault();
@@ -185,61 +190,61 @@ SimpleGraph.prototype.update = function() {
   }
 }
 
-//SimpleGraph.prototype.datapoint_drag = function() {
-//  var self = this;
-//  return function(d) {
-//    registerKeyboardHandler(self.keydown());
-//    document.onselectstart = function() { return false; };
-//    self.selected = self.dragged = d;
-//    self.update();
-//    
-//  }
-//};
+SimpleGraph.prototype.datapoint_drag = function() {
+  var self = this;
+  return function(d) {
+    registerKeyboardHandler(self.keydown());
+    document.onselectstart = function() { return false; };
+    self.selected = self.dragged = d;
+    self.update();
+    
+  }
+};
 
-//SimpleGraph.prototype.mousemove = function() {
-//  var self = this;
-//  return function() {
-//    var p = d3.svg.mouse(self.vis[0][0]),
-//        t = d3.event.changedTouches;
-//    
-//    if (self.dragged) {
-//      self.dragged.y = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
-//      self.update();
-//    };
-//    if (!isNaN(self.downx)) {
-//      d3.select('body').style("cursor", "ew-resize");
-//      var rupx = self.x.invert(p[0]),
-//          xaxis1 = self.x.domain()[0],
-//          xaxis2 = self.x.domain()[1],
-//          xextent = xaxis2 - xaxis1;
-//      if (rupx != 0) {
-//        var changex, new_domain;
-//        changex = self.downx / rupx;
-//        new_domain = [xaxis1, xaxis1 + (xextent * changex)];
-//        self.x.domain(new_domain);
-//        self.redraw()();
-//      }
-//      d3.event.preventDefault();
-//      d3.event.stopPropagation();
-//    };
-//    if (!isNaN(self.downy)) {
-//      d3.select('body').style("cursor", "ns-resize");
-//      var rupy = self.y.invert(p[1]),
-//          yaxis1 = self.y.domain()[1],
-//          yaxis2 = self.y.domain()[0],
-//          yextent = yaxis2 - yaxis1;
-//      if (rupy != 0) {
-//        var changey, new_domain;
-//        changey = self.downy / rupy;
-//        new_domain = [yaxis1 + (yextent * changey), yaxis1];
-//        self.y.domain(new_domain);
-//        self.redraw()();
-//      }
-//      d3.event.preventDefault();
-//      d3.event.stopPropagation();
-//    }
-//  }
-//};
+SimpleGraph.prototype.mousemove = function() {
+  var self = this;
+  return function() {
+    var p = d3.svg.mouse(self.vis[0][0]),
+        t = d3.event.changedTouches;
+    
+    if (self.dragged) {
+      self.dragged.y = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
+      self.update();
+    };
+    if (!isNaN(self.downx)) {
+      d3.select('body').style("cursor", "ew-resize");
+      var rupx = self.x.invert(p[0]),
+          xaxis1 = self.x.domain()[0],
+          xaxis2 = self.x.domain()[1],
+          xextent = xaxis2 - xaxis1;
+      if (rupx != 0) {
+        var changex, new_domain;
+        changex = self.downx / rupx;
+        new_domain = [xaxis1, xaxis1 + (xextent * changex)];
+        self.x.domain(new_domain);
+        self.redraw()();
+      }
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+    };
+    if (!isNaN(self.downy)) {
+      d3.select('body').style("cursor", "ns-resize");
+      var rupy = self.y.invert(p[1]),
+          yaxis1 = self.y.domain()[1],
+          yaxis2 = self.y.domain()[0],
+          yextent = yaxis2 - yaxis1;
+      if (rupy != 0) {
+        var changey, new_domain;
+        changey = self.downy / rupy;
+        new_domain = [yaxis1 + (yextent * changey), yaxis1];
+        self.y.domain(new_domain);
+        self.redraw()();
+      }
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+    }
+  }
+};
 
 
 // mouseup is to change hand back to cursor 17/03/17
@@ -383,4 +388,8 @@ SimpleGraph.prototype.yaxis_drag = function(d) {
     self.downy = self.y.invert(p[1]);
   }
 };
+
+
+
+
 

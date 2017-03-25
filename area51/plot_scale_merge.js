@@ -70,12 +70,40 @@
   // ------------------------ below is to obtain the load cell data ------------------------
       var data_scale;
       var url_scale =   "https://data.sparkfun.com/output/KJo3Nx8grJcMDpEWQOXg.json"
+
+
+
+// ---------------------below is data defination for commercial balance -----------------------------
+  
+      var key_balance=["commercial"];
+      var act_balance=[];
+      
+      var format_balance = d3.timeParse('"%Y-%b-%d %H:%M:%S"')
+      
+      var float_to_string=String.valueOf()
+      
+      // Set the ranges
+      //var x_balance = d3.scaleTime().range([0, width]);
+      //var y_balance = d3.scaleLinear().range([height, 0]);
+      
+      //// Define the line for scaleisture
+      var valueline_balance=[];
+      key_balance.forEach(function(d,i) {
+          valueline_balance[i]=d3.line()
+              .x(function(d) { return x_scale(d.measure_local_time); })
+              .y(function(d) { return y_scale(d[key_balance[i]]); });
+      })
+      
+  
+// ---------------------above is data defination for commercial balance -----------------------------
+
+
 // making sure get_balance is executed after get_scale is done
 // reference: http://stackoverflow.com/questions/5000415/call-a-function-after-previous-function-is-complete
 get_scale(   function() {
-      get_balance();
+    get_balance();
      });
-
+//$.when(get_scale()).then(get_balance());
 
 function get_scale(callback){
       d3.json(url_scale,  function (error,json) {
@@ -182,29 +210,6 @@ function get_scale(callback){
 
 
 
-// ---------------------below is data defination for commercial balance -----------------------------
-  
-      var key_balance=["commercial"];
-      var act_balance=[];
-      
-      var format_balance = d3.timeParse('"%Y-%b-%d %H:%M:%S"')
-      
-      var float_to_string=String.valueOf()
-      
-      // Set the ranges
-      //var x_balance = d3.scaleTime().range([0, width]);
-      //var y_balance = d3.scaleLinear().range([height, 0]);
-      
-      //// Define the line for scaleisture
-      var valueline_balance=[];
-      key_balance.forEach(function(d,i) {
-          valueline_balance[i]=d3.line()
-              .x(function(d) { return x_scale(d.measure_local_time); })
-              .y(function(d) { return y_scale(d[key_balance[i]]); });
-      })
-      
-  
-// ---------------------above is data defination for commercial balance -----------------------------
 
 
 function get_balance(){
@@ -264,8 +269,8 @@ function get_balance(){
 
 }
   
-  
-  
+// http://stackoverflow.com/questions/1215392/how-to-quickly-and-conveniently-disable-all-console-log-statements-in-my-code 
+console.log = function() {}  
   
   
   
